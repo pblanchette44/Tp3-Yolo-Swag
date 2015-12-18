@@ -1,0 +1,424 @@
+
+/**
+ * I N F x 1 2 0
+ *
+ * D�crivez votre classe Tp2partie2 ici.
+ * 
+ * @author (votre nom) 
+ * @version (une date)
+ *
+ * (votre code permanent)
+ * (votre adresse de courriel)
+ */
+
+import java.io.*;
+
+public class Tp2partie2 {
+
+    public static Vehicule[] vArray;
+
+    public static void main (String[] params) {
+        System.out.println("\f");
+
+        InitProgram();
+        Menu();
+
+    } // main
+    public static void InitProgram()
+    {
+
+        System.out.println("\f");
+        System.out.println("Bienvenu dans la base de donnee de vehicules");
+        System.out.println("");
+        System.out.println("Veuillez entrer le nombre de vehicule maximum que vous voulez dans la base de donnees");
+
+        int size;
+        try 
+        {
+            size = Clavier.lireInt();
+        } catch (NumberFormatException e)
+        {
+            System.out.println("Erreur, la valeure entrée ne correspond pas à un Entier");
+            System.out.println("La taille de la base de donnée par défaut sera 5");
+            size = 5;
+        }
+
+        while(size < 5 || size > 15)
+        {
+            System.out.println("Veuillez entrer un nombre entre 5 et 15");
+            size = Clavier.lireInt();
+        }
+
+        vArray = new Vehicule[size];
+    }
+
+    //method main Menu
+    public static void Menu()
+    {   
+
+        System.out.println("\b");
+        String menuSelection = new String("");
+        String CHECK_STRING = new String("NILCRVPDSQ");
+
+        while(!menuSelection.equalsIgnoreCase("Q"))
+        {
+            System.out.println("\b");
+            System.out.println("\b");
+            System.out.println("Veuillez choisir l'une des options suivantes");
+            System.out.println("N ---> ajouter un nouveau vehicule");
+            System.out.println("I ---> Obtenir des informations sur un vehicule particulier");
+            System.out.println("L ---> Afficher tout les vehicules presents dans la base de donnee");
+            System.out.println("C ---> Afficher les informations sur une categorie de vehicule particuliere");
+            System.out.println("R ---> Afficher les vehicules dont la description contient la chaine recherchee");
+            System.out.println("V ---> Vendre un vehicule");
+            System.out.println("P ---> modifier le prix d'un vehicule");
+            System.out.println("D ---> modifier la description d'un vehicule");
+            System.out.println("S ---> Supprimer un vehicule");
+            System.out.println("Q ---> Quitter le programme");
+            System.out.println("");
+            menuSelection = Clavier.lireString();   
+
+            while(!CHECK_STRING.toUpperCase().contains(menuSelection.toUpperCase()))
+            {
+
+                System.out.println("Veuillez choisir une option valide");
+                menuSelection = Clavier.lireString();   
+            }
+
+            if(menuSelection.equalsIgnoreCase("N"))
+            {
+                //ajouter nouveau Vehicule                
+                //boucle pour trouver le nouvel index auquel il faut ajouter un vehicule.
+
+                int addIndex=0;
+                for(int i =0; i < vArray.length; i ++)
+                {
+                    if(vArray[i] != null)
+                    {
+                        addIndex = addIndex+1;
+                    }
+                }
+                //verification de l'espace disponible
+
+                if(addIndex == vArray.length)
+                {
+                    System.out.println("Allocation de + d'espace");
+                    //new Array method
+                    Vehicule[] tableauDeTravail = new Vehicule[vArray.length + 5];
+                    //Copie du contenu de vArray vers nouveau tableau.
+                    for(int i =0; i < vArray.length; i++)
+                    {
+                        tableauDeTravail[i] = vArray[i];
+                    }
+                    //change la reference
+                    vArray = tableauDeTravail;
+                }
+                ajouterVehicule(addIndex);
+            } else if(menuSelection.equalsIgnoreCase("i"))
+            {
+                afficherVehicule();
+            } else if (menuSelection.equalsIgnoreCase("l"))
+            {
+                afficherTotal();
+            } else if (menuSelection.equalsIgnoreCase("c"))
+            {
+                afficherCategorie();
+            } else if (menuSelection.equalsIgnoreCase("r"))
+            {
+                rechercherDescription();             
+            } else if(menuSelection.equalsIgnoreCase("v"))
+            {
+                vendreVehicule();
+            }
+        }   
+
+        //Out of the Menu loop
+        sauvegarderFichier();
+
+    }
+
+    public static void ajouterVehicule(int index)
+    {
+
+        // on a besoin de boucle de validation pour chaque entrée. 
+
+        System.out.println("Veuillez entrez une categorie de vehicule");
+        int categorie;
+        try
+        {
+            categorie = Clavier.lireInt();
+        } catch (NumberFormatException e)
+        {
+            System.out.println("La valeure entrée n'est pas un entier, le vehicule sera initialisé à la valeur par défaut.");
+            categorie = Vehicule.CATEGORIE_DEFAUT;
+        }
+        while(categorie < 1 || categorie > 4)
+        {
+            System.out.println("Veuillez entrer une categorie valide");
+            categorie = Clavier.lireInt();
+        }
+
+        System.out.println("Veuillez entrer une description du vehicule");
+        String description = Clavier.lireString();
+
+        if(description.length() == 0)
+        {
+            description = Vehicule.DESCRIP_DEFAUT;
+        }
+
+        System.out.println("Veuillez entrez des informations sur le vendeur");
+        String vendeur = Clavier.lireString();
+        if(vendeur.length() == 0)
+        {
+            vendeur= Vehicule.VENDEUR_DEFAUT;
+        }
+
+        System.out.println("Veuillez entrez le prix du vehicule");
+        double prix ;
+        try
+        {
+            prix = Clavier.lireDouble();
+        } catch (NumberFormatException e)
+        {
+            System.out.println("La valeure entrée ne correspond pas a un entier, le vehicule sera initialise a la valeur par defaut");
+            prix = Vehicule.PRIX_DEFAUT;
+        }
+
+        vArray[index] = new Vehicule(categorie,description,vendeur,prix);
+
+    }
+
+    public static void afficherVehicule()
+    {
+
+        if(vArray[0] == null)
+        {
+            System.out.println("La base de donnée est vide, vous ne pouvez extraire d'informations");
+
+        } else
+        {
+            System.out.println("Veuillez entrez un numero de vehicule");
+            int index = Clavier.lireInt();
+            while(index > vArray.length - 1 || index < 0)
+            {
+                System.out.println("Vous avez entrer un numero trop grand pour la base de donnée, veuillez entrer un Entier entre 0 et " + (vArray.length - 1) + ".");
+                index = Clavier.lireInt();
+            }
+            if(vArray[index] == null)
+            {
+
+                System.out.println("Il n'y a pas de vehicule pour le numero associé");
+            } else {
+                System.out.println("\br");
+                System.out.println(vArray[index].toString());
+
+            }
+
+        }
+    }
+
+    public static void afficherTotal()
+    {
+        if(vArray[0] == null)
+        {
+            System.out.println("La base de donnée est vide, vous ne pouvez extraire d'informations");
+        } else {
+            int index = 0;
+            int displayCount = 0;
+
+            while(vArray[index] != null)
+            {
+
+                System.out.println("\br");
+                System.out.println(vArray[index].toString());
+
+                index = index +1;
+                displayCount = displayCount + 1;
+
+                if(displayCount > 5)
+                {
+                    System.out.println("Veuillez appuyer sur Entrez pour continuer");
+                    Clavier.lireFinLigne();
+                    displayCount = 0;
+                }
+
+            }
+        }
+    }
+
+    public static void afficherCategorie()
+    {
+        System.out.println("\b");
+        System.out.println("Veuillez choisir l'une des categorie de vehicule suivant");
+        System.out.println(" 0 : non-classifie");
+        System.out.println(" 1 : terrestre");
+        System.out.println(" 2 : aquatique");
+        System.out.println(" 3 : aerien");
+        System.out.println(" 4 : amphibie");
+
+        int cat;
+        boolean signalVide = true;
+
+        try
+        {
+            cat = Clavier.lireInt();
+            while(cat <= -1 || cat >= 5)
+            {
+                System.out.println("Veuillez entrer un entier compris entre 0 et 4");
+                cat = Clavier.lireInt();
+            }
+        } catch (NumberFormatException e)
+        {
+            System.out.println("Vous devez entrer un nombre entier");
+            cat = -1;
+        }
+
+        for(int i = 0;i < vArray.length-1; i++)
+        {
+            if(vArray[i] != null && vArray[i].getCategorie() ==cat)
+            {
+
+                System.out.println(vArray[i].toString());
+                signalVide = false;
+
+            } 
+        }
+        if(signalVide)
+        {
+            System.out.println("\b");
+            System.out.println("Il n'y a aucun vehicule de cette categorie dans la base de donnée.");
+        }
+
+    }
+
+    public static void sauvegarderFichier()
+    {
+        try
+        {
+            FileWriter ficVehiculeVendu;
+
+            FileWriter ficVehiculeNonVendu;
+
+            ficVehiculeVendu = new FileWriter("Vehicules_Vendu.txt");
+            ficVehiculeNonVendu = new FileWriter("Vehicules_Non_Vendu.txt");
+
+            PrintWriter ecrivainVendu = new PrintWriter(ficVehiculeVendu);
+            PrintWriter ecrivainNonVendu = new PrintWriter(ficVehiculeNonVendu);
+
+            ecrivainVendu.println("\f");
+
+            for(int i=0; i<vArray.length-1; i++)
+            {
+                if(vArray[i]!= null && vArray[i].getVendu())
+                {
+
+                    ecrivainVendu.println("");
+
+                    ecrivainVendu.println("Numero d'idendification: " + vArray[i].getNumeroIdentification());
+                    ecrivainVendu.println("Categorie de vehicule: " + vArray[i].getCategorie());   
+                    ecrivainVendu.println("Description: " + vArray[i].getDescription());   
+                    ecrivainVendu.println("Information sur le vendeur: " + vArray[i].getVendeur());
+
+                    ecrivainVendu.println("");
+
+                } else if (vArray[i]!=null && !vArray[i].getVendu())
+                {
+                    ecrivainNonVendu.println("");
+
+                    ecrivainNonVendu.println("Numero d'idendification: " + vArray[i].getNumeroIdentification());
+                    ecrivainNonVendu.println("Categorie de vehicule: " + vArray[i].getCategorie());   
+                    ecrivainNonVendu.println("Description: " + vArray[i].getDescription());   
+                    ecrivainNonVendu.println("Information sur le vendeur: " + vArray[i].getVendeur());
+
+                    ecrivainNonVendu.println("");
+                }
+
+            }
+
+            ficVehiculeVendu.close();
+            ficVehiculeNonVendu.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Erreur ! Fichier de lecture inexistant");
+        } catch (IOException e){
+            System.out.println("Erreur d'entree/sortie");
+        }
+    }
+
+    public static void rechercherDescription()
+    {
+        System.out.println("\b");
+
+        System.out.println("Veuillez entrez la description recherchee.");
+        String search = Clavier.lireString();
+
+        while(search.length() == 0)
+        {
+            System.out.println("\b");
+            System.out.println("Vous n'avez rien entrez");
+            System.out.println("Veuillez entrez la description recherchee.");
+            search = Clavier.lireString();
+        }
+
+        boolean checked = false;
+        for(int i =0; i < vArray.length; i++)
+        {
+
+            if(vArray[i] != null)
+            {
+                checked = false;
+                String read = vArray[i].getDescription();
+
+                //trimming of both
+                read = read.trim();
+                search = search.trim();
+                read = read.toUpperCase();
+                search = search.toUpperCase();
+
+                for(int a=0; a <= read.length()-1;a++)
+                {
+
+                    if(read.charAt(a) == search.charAt(0) && a <= read.length() - search.length())
+                    {
+                        if(read.substring(a,(a+search.length())).compareToIgnoreCase(search) == 0 && !checked)
+                        {
+                            System.out.println("\b");
+                            System.out.println(vArray[i].toString());
+                            checked = true;
+                        }  
+                    }
+
+                }
+
+            }
+
+        }
+        if(!checked)
+        {
+            System.out.println("Aucun vehicule ne correspond a votre description");
+
+        }
+    }
+
+    public static void vendreVehicule()
+    {
+        System.out.println("\b");
+        System.out.println("Veuillez entrer le numero du vehicule que vous voulez vendre.");
+        int id = Clavier.lireInt();
+
+        while( id < 0 && id > vArray.length - 1 )
+        {
+            System.out.println("Veuillez entrer un numero d'identification entre 0 et " + (vArray.length-1));
+            id = Clavier.lireInt();
+        }
+
+        //evite le null pointer
+        if(vArray[id] != null)
+        {
+            vArray[id].setVendu(true);
+
+        } else {
+            System.out.println("Il n'y a pas de vehicule a l'adresse entree.");
+        }
+
+    }
+} // Tp2partie2
